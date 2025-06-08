@@ -1,0 +1,12 @@
+<h2>OTP Login</h2>
+<form method="POST" action="/auth/tsend-otp">
+  <input name="mobile" placeholder="+1xxxxxxxxxx" required>
+  <button type="submit">Send OTP</button>
+</form>
+
+<h2>Verify OTP</h2>
+<form method="POST" action="/auth/verify-otp">
+  <input name="mobile" placeholder="+1xxxxxxxxxx" required><br>
+  <input name="otp" placeholder="Enter OTP" required><br>
+  <button type="submit">Verify & Login</button>
+</form>

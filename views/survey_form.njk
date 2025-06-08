@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYC Driver Survey</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .survey-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 480px;
+            min-height: 500px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #f0f0f0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .question-container {
+            padding: 40px 30px;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-counter {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .question-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .question-subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .options-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .option.selected {
+            background: #e8f5e8;
+            border-color: #4CAF50;
+            color: #2e7d32;
+        }
+
+        .option input[type="checkbox"],
+        .option input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .text-input, .select-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.2s ease;
+            background: #f8f9fa;
+        }
+
+        .text-input:focus, .select-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+        }
+
+        .textarea-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.2s ease;
+            background: #f8f9fa;
+        }
+
+        .textarea-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            background: white;
+        }
+
+        .navigation {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 100px;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #d0d0d0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .question {
+            display: none;
+        }
+
+        .question.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .submit-success {
+            text-align: center;
+            padding: 60px 30px;
+            color: #4CAF50;
+        }
+
+        .submit-success h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .submit-success p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .question-container {
+                padding: 30px 20px;
+            }
+            
+            .navigation {
+                padding: 16px 20px;
+            }
+            
+            .question-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="survey-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Question 1: Driver Type -->
+        <div class="question active" id="q1">
+            <div class="question-container">
+                <div class="question-counter">Question 1 of 10</div>
+                <h2 class="question-title">What type of driver are you?</h2>
+                <p class="question-subtitle">Select all that apply</p>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="yellow"> Yellow cab driver
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="green"> Green cab driver
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="blackcar"> Black car/Livery driver
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="rideshare"> Rideshare driver (Uber/Lyft)
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="owner"> Owner-operator
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="driverType" value="new"> New or aspiring driver
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 2: Experience -->
+        <div class="question" id="q2">
+            <div class="question-container">
+                <div class="question-counter">Question 2 of 10</div>
+                <h2 class="question-title">How long have you been driving in NYC?</h2>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="radio" name="experience" value="<1"> Less than 1 year
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="experience" value="1-3"> 1–3 years
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="experience" value="3-7"> 3–7 years
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="experience" value="7-15"> 7–15 years
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="experience" value="15+"> Over 15 years
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 3: Hours -->
+        <div class="question" id="q3">
+            <div class="question-container">
+                <div class="question-counter">Question 3 of 10</div>
+                <h2 class="question-title">How many hours do you usually drive in a day?</h2>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="radio" name="hours" value="<6"> Less than 6 hours
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="hours" value="6-8"> 6–8 hours
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="hours" value="8-10"> 8–10 hours
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="hours" value="10+"> 10+ hours
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 4: Zones -->
+        <div class="question" id="q4">
+            <div class="question-container">
+                <div class="question-counter">Question 4 of 10</div>
+                <h2 class="question-title">Which zones/areas do you usually cover?</h2>
+                <div class="options-container">
+                    <select class="select-input" name="zones">
+                        <option value="">Select an area</option>
+                        <option value="manhattan">Manhattan</option>
+                        <option value="brooklyn">Brooklyn</option>
+                        <option value="bronx">Bronx</option>
+                        <option value="queens">Queens</option>
+                        <option value="staten">Staten Island</option>
+                        <option value="all">All city</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 5: City Listens -->
+        <div class="question" id="q5">
+            <div class="question-container">
+                <div class="question-counter">Question 5 of 10</div>
+                <h2 class="question-title">Do you feel the city listens to driver needs and feedback?</h2>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="radio" name="cityListens" value="yes"> Yes
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="cityListens" value="sometimes"> Sometimes
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="cityListens" value="rarely"> Rarely
+                    </label>
+                    <label class="option">
+                        <input type="radio" name="cityListens" value="never"> Never
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 6: Weekly Earnings -->
+        <div class="question" id="q6">
+            <div class="question-container">
+                <div class="question-counter">Question 6 of 10</div>
+                <h2 class="question-title">What is your average weekly earnings goal?</h2>
+                <p class="question-subtitle">Optional - helps with designing estimators</p>
+                <div class="options-container">
+                    <input type="text" class="text-input" name="weeklyGoal" placeholder="Enter your weekly earnings goal (e.g., $800)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 7: Challenges -->
+        <div class="question" id="q7">
+            <div class="question-container">
+                <div class="question-counter">Question 7 of 10</div>
+                <h2 class="question-title">What challenges do you face most often as a taxi driver?</h2>
+                <p class="question-subtitle">Select top 3</p>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="longhours"> Long hours with low income
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="passengers"> Unfair passenger behavior
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="routes"> No real-time route optimization
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="coordination"> Lack of driver coordination
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="expenses"> Rising expenses (gas, maintenance)
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="voice"> No platform to share my voice or opinions
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="image"> Poor public image of drivers
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="challenges" value="other"> Other
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 8: Improve Earnings -->
+        <div class="question" id="q8">
+            <div class="question-container">
+                <div class="question-counter">Question 8 of 10</div>
+                <h2 class="question-title">What do you believe would improve your earnings the most?</h2>
+                <div class="options-container">
+                    <textarea class="textarea-input" name="improveEarnings" placeholder="Share your thoughts on what would help improve your earnings..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 9: Advice -->
+        <div class="question" id="q9">
+            <div class="question-container">
+                <div class="question-counter">Question 9 of 10</div>
+                <h2 class="question-title">What advice would you give to new or young drivers joining this business?</h2>
+                <div class="options-container">
+                    <textarea class="textarea-input" name="advice" placeholder="Share your wisdom and experience..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 10: App Features -->
+        <div class="question" id="q10">
+            <div class="question-container">
+                <div class="question-counter">Question 10 of 10</div>
+                <h2 class="question-title">If we built a smart community app for drivers, what features would you want first?</h2>
+                <p class="question-subtitle">Select all that interest you</p>
+                <div class="options-container">
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="routes"> Smart route suggestions
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="prediction"> Fare prediction/earning estimator
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="alerts"> Events & alerts (closures, protests, traffic)
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="spots"> Trusted rest spots and gas stations
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="forum"> Driver forum / group chat
+                    </label>
+                    <label class="option">
+                        <input type="checkbox" name="appFeatures" value="help"> Legal or financial help
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <div class="question" id="success">
+            <div class="submit-success">
+                <h2>Thank You! 🚕</h2>
+                <p>Your feedback is valuable and will help improve conditions for all NYC drivers.</p>
+                <a href="/">🏠 Home</a>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" style="visibility: hidden;">Previous</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">Next</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 1;
+        const totalQuestions = 10;
+        let formData = {};
+
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.style.visibility = currentQuestion === 1 ? 'hidden' : 'visible';
+            
+            if (currentQuestion === totalQuestions) {
+                nextBtn.textContent = 'Submit';
+                nextBtn.className = 'btn btn-primary';
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.className = 'btn btn-primary';
+            }
+        }
+
+        function showQuestion(questionNum) {
+            // Hide all questions
+            const questions = document.querySelectorAll('.question');
+            questions.forEach(q => q.classList.remove('active'));
+            
+            // Show current question
+            document.getElementById('q' + questionNum).classList.add('active');
+        }
+
+        function validateCurrentQuestion() {
+            const currentQ = document.getElementById('q' + currentQuestion);
+            
+            switch(currentQuestion) {
+                case 1: // Driver type (checkboxes - at least one required)
+                    return currentQ.querySelectorAll('input[name="driverType"]:checked').length > 0;
+                case 2: // Experience (radio - required)
+                    return currentQ.querySelector('input[name="experience"]:checked') !== null;
+                case 3: // Hours (radio - required)
+                    return currentQ.querySelector('input[name="hours"]:checked') !== null;
+                case 4: // Zones (select - required)
+                    return currentQ.querySelector('select[name="zones"]').value !== '';
+                case 5: // City listens (radio - required)
+                    return currentQ.querySelector('input[name="cityListens"]:checked') !== null;
+                case 6: // Weekly goal (optional)
+                    return true;
+                case 7: // Challenges (checkboxes - at least one required)
+                    return currentQ.querySelectorAll('input[name="challenges"]:checked').length > 0;
+                case 8: // Improve earnings (textarea - required)
+                    return currentQ.querySelector('textarea[name="improveEarnings"]').value.trim() !== '';
+                case 9: // Advice (textarea - required)
+                    return currentQ.querySelector('textarea[name="advice"]').value.trim() !== '';
+                case 10: // App features (checkboxes - at least one required)
+                    return currentQ.querySelectorAll('input[name="appFeatures"]:checked').length > 0;
+                default:
+                    return true;
+            }
+        }
+
+        function saveCurrentAnswer() {
+            const currentQ = document.getElementById('q' + currentQuestion);
+            
+            switch(currentQuestion) {
+                case 1:
+                    formData.driverType = Array.from(currentQ.querySelectorAll('input[name="driverType"]:checked')).map(el => el.value);
+                    break;
+                case 2:
+                    const exp = currentQ.querySelector('input[name="experience"]:checked');
+                    formData.experience = exp ? exp.value : '';
+                    break;
+                case 3:
+                    const hours = currentQ.querySelector('input[name="hours"]:checked');
+                    formData.hours = hours ? hours.value : '';
+                    break;
+                case 4:
+                    formData.zones = currentQ.querySelector('select[name="zones"]').value;
+                    break;
+                case 5:
+                    const listens = currentQ.querySelector('input[name="cityListens"]:checked');
+                    formData.cityListens = listens ? listens.value : '';
+                    break;
+                case 6:
+                    formData.weeklyGoal = currentQ.querySelector('input[name="weeklyGoal"]').value;
+                    break;
+                case 7:
+                    formData.challenges = Array.from(currentQ.querySelectorAll('input[name="challenges"]:checked')).map(el => el.value);
+                    break;
+                case 8:
+                    formData.improveEarnings = currentQ.querySelector('textarea[name="improveEarnings"]').value;
+                    break;
+                case 9:
+                    formData.advice = currentQ.querySelector('textarea[name="advice"]').value;
+                    break;
+                case 10:
+                    formData.appFeatures = Array.from(currentQ.querySelectorAll('input[name="appFeatures"]:checked')).map(el => el.value);
+                    break;
+            }
+        }
+
+        function nextQuestion() {
+            if (!validateCurrentQuestion()) {
+                alert('Please answer this question before proceeding.');
+                return;
+            }
+            
+            saveCurrentAnswer();
+            
+            if (currentQuestion === totalQuestions) {
+                // Submit form
+                submitForm();
+                return;
+            }
+            
+            currentQuestion++;
+            showQuestion(currentQuestion);
+            updateProgress();
+            updateNavigation();
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 1) {
+                saveCurrentAnswer();
+                currentQuestion--;
+                showQuestion(currentQuestion);
+                updateProgress();
+                updateNavigation();
+            }
+        }
+
+        function submitForm() {
+            console.log('Survey completed:', formData);
+            
+            // Hide all questions and show success
+            document.querySelectorAll('.question').forEach(q => q.classList.remove('active'));
+            document.getElementById('success').classList.add('active');
+            document.querySelector('.navigation').style.display = 'none';
+            
+            // Here you would typically send the data to your server
+            // Send data to server
+            fetch('/survey/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            }).then(res => res.json())
+            .then(data => console.log('Server Response:', data))
+            .catch(err => console.error('Error:', err));
+                }
+
+        // Add click handlers for options
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle option selection visual feedback
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const input = this.querySelector('input');
+                    if (input.type === 'radio') {
+                        // Remove selected class from other radio options in same group
+                        this.closest('.options-container').querySelectorAll('.option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    } else if (input.type === 'checkbox') {
+                        this.classList.toggle('selected');
+                    }
+                });
+            });
+            
+            updateProgress();
+            updateNavigation();
+        });
+    </script>
+</body>
+</html>

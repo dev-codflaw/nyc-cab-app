@@ -89,9 +89,10 @@ exports.verifyOtp = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
   }
 
-  // Clear OTP
+  // Clear OTP and mark as verified
   user.otp = undefined;
   user.otpExpires = undefined;
+  user.verified = true;
   await user.save();
 
   // Generate JWT
@@ -176,7 +177,7 @@ exports.reset = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  if (!req.session.user) {
+  if (!req.user) {
     return res.status(401).json({
       success: false,
       message: "Not authenticated. Please login first."
@@ -193,17 +194,11 @@ exports.updateProfile = async (req, res) => {
   }
 
   const updatedUser = await User.findByIdAndUpdate(
-    req.session.user._id,
+    req.user._id,
     { firstname, lastname, email, mobile },
     { new: true }
   );
 
-  Object.assign(req.session.user, {
-    firstname,
-    lastname,
-    email,
-    mobile,
-  });
 
   res.json({
     success: true,

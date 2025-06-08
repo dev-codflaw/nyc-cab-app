@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middlewares/auth');
+const { authenticateJWT } = require('../middlewares/auth');
 const SurveyResponse = require('../models/SurveyResponse');
 
 // Survey form
-router.get('/', auth, (req, res) => {
+router.get('/', authenticateJWT, (req, res) => {
   res.render('survey_form.njk'); // Use your HTML as Nunjucks template
 });
 
 // Submit survey
-router.post('/submit', auth, express.json(), async (req, res) => {
+router.post('/submit', authenticateJWT, express.json(), async (req, res) => {
   try {
     const surveyData = req.body;
     const newSurvey = new SurveyResponse({
-      userId: req.session.user._id,
+      userId: req.user._id,
       data: surveyData,
     });
     await newSurvey.save();

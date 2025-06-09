@@ -35,7 +35,11 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user;
   next();
 });
-app.use(cors());
+app.use(cors({
+  origin: "https://strikersnyc.com", // Allow your frontend domain
+  credentials: true
+}));
+
 app.use(express.json());  
 
 // Routes

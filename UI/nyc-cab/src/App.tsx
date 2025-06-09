@@ -1,12 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Landing from './components/Landing';
-import LoginMethod from './components/LoginMethod';
-import ProfileComplete from './components/ProfileComplete';
-import Home from './components/Home';
-import LoginMobile from "./components/LoginMobile.tsx";
-import LoginEmail from "./components/LoginEmail.tsx";
-import LoginGmail from "./components/LoginGmail.tsx";
-import MobileOtp from "./components/MobileOtp.tsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Landing from "./components/Landing";
+import LoginMethod from "./components/LoginMethod";
+import MobileLogin from "./components/MobileLogin";
+import OtpVerify from "./components/OtpVerify";
+import Profile from "./components/Profile";
+import Home from "./components/Home";
+import PrivateRoute from "./components/PrivateRoute";
+import Survey from "./components/Survey";
 
 export default function App() {
     return (
@@ -14,12 +14,34 @@ export default function App() {
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/login" element={<LoginMethod />} />
-                <Route path="/login/mobile" element={<LoginMobile />} />
-                <Route path="/login/email" element={<LoginEmail />} />
-                <Route path="/login/gmail" element={<LoginGmail />} />
-                <Route path="/otp" element={<MobileOtp />} />
-                <Route path="/profile" element={<ProfileComplete />} />
-                <Route path="/home" element={<Home />} />
+                <Route path="/login-mobile" element={<MobileLogin />} />
+                <Route path="/verify-otp" element={<OtpVerify />} />
+
+                <Route
+                    path="/profile"
+                    element={
+                        <PrivateRoute>
+                            <Profile />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/home"
+                    element={
+                        <PrivateRoute>
+                            <Home />
+                        </PrivateRoute>
+                    }
+                />
+                <Route
+                    path="/survey"
+                    element={
+                        <PrivateRoute>
+                            <Survey />
+                        </PrivateRoute>
+                    }
+                />
+
             </Routes>
         </BrowserRouter>
     );

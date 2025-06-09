@@ -1,11 +1,23 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Home() {
+    const navigate = useNavigate();
+    const logout = () => {
+        localStorage.removeItem("token");
+        navigate("/");
+    };
+
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <h1 className="text-xl font-semibold mb-4">Welcome to NYC-CAB</h1>
-            <a href="/profile" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Profile</a>
-            <a href="/" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Logout</a>
-            <a href="#" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Join Community</a>
-            <a href="#" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Survey</a>
+        <div className="flex flex-col p-4 min-h-screen">
+            <h2 className="text-xl font-bold mb-4">Welcome to Home!</h2>
+            <button onClick={() => navigate("/profile")} className="bg-blue-600 text-white p-3 rounded mb-2">
+                Profile
+            </button>
+            <a href="#" className="bg-green-600 text-white p-3 rounded mb-2 text-center">Join Community</a>
+            <button onClick={() => navigate("/survey")} className="bg-purple-600 text-white p-3 rounded mb-2 text-center">
+                Survey
+            </button>
+            <button onClick={logout} className="bg-red-600 text-white p-3 rounded">Logout</button>
         </div>
     );
 }

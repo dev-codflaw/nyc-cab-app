@@ -89,9 +89,10 @@ exports.verifyOtp = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
   }
 
-  // Clear OTP
+  // Clear OTP and mark as verified
   user.otp = undefined;
   user.otpExpires = undefined;
+  user.verified = true;
   await user.save();
 
   // Generate JWT
@@ -176,7 +177,7 @@ exports.reset = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-  if (!req.session.user) {
+  if (!req.user) {
     return res.status(401).json({
       success: false,
       message: "Not authenticated. Please login first."
@@ -185,36 +186,89 @@ exports.updateProfile = async (req, res) => {
 
   const { firstname, lastname, email, mobile } = req.body;
 
-  if (!firstname || !lastname || !email || !mobile ) {
+  if (!firstname || !lastname || !email || !mobile) {
     return res.status(400).json({
       success: false,
-      message: "Please provide all fields: firstname, lastname, email, mobile."
+      message: "All fields are required."
     });
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    req.session.user._id,
-    { firstname, lastname, email, mobile },
-    { new: true }
-  );
-
-  Object.assign(req.session.user, {
-    firstname,
-    lastname,
-    email,
-    mobile,
-  });
-
-  res.json({
-    success: true,
-    message: "Profile updated successfully.",
-    user: {
-      _id: updatedUser._id,
-      firstname: updatedUser.firstname,
-      lastname: updatedUser.lastname,
-      email: updatedUser.email,
-      mobile: updatedUser.mobile,
+  try {
+    // Check for duplicate email
+    const existingEmail = await User.findOne({
+      email,
+      _id: { $ne: req.user._id } // Exclude current user
+    });
+    if (existingEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is already in use by another account."
+      });
     }
-  });
+
+    // Check for duplicate mobile
+    const existingMobile = await User.findOne({
+      mobile,
+      _id: { $ne: req.user._id } // Exclude current user
+    });
+    if (existingMobile) {
+      return res.status(400).json({
+        success: false,
+        message: "Mobile number is already in use by another account."
+      });
+    }
+
+    // Update profile
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { firstname, lastname, email, mobile },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully.",
+      user: {
+        _id: updatedUser._id,
+        firstname: updatedUser.firstname,
+        lastname: updatedUser.lastname,
+        email: updatedUser.email,
+        mobile: updatedUser.mobile
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Error updating profile."
+    });
+  }
 };
 
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.submitSurvey = async (req, res) => {
+  const { surveyAnswers } = req.body;
+  const userId = req.user._id; // from JWT
+
+  if (!surveyAnswers || !Array.isArray(surveyAnswers)) {
+    return res.status(400).json({ success: false, message: "Invalid data." });
+  }
+
+  // Save the survey data to DB with userId
+  // Example: await Survey.create({ userId, surveyAnswers });
+
+  res.json({ success: true, message: "Survey submitted successfully!" });
+};

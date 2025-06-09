@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const { authenticateJWT } = require('../middlewares/auth');
 
 router.get('/register', authController.showRegister);
 router.post('/register', authController.register);
@@ -42,8 +43,9 @@ router.get('/profile', (req, res) => {
     res.json({"message":"ok"});
 });
 
-router.post('/profile', authController.updateProfile);
+router.post('/profile', authenticateJWT, authController.updateProfile);
+router.get('/profile/me', authenticateJWT, authController.getProfile);
 
-
+router.post("/survey", authenticateJWT, authController.submitSurvey);
 
 module.exports = router;

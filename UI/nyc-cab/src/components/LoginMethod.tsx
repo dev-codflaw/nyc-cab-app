@@ -1,10 +1,16 @@
-export default function LoginOptions() {
+import { useNavigate } from "react-router-dom";
+
+export default function LoginMethod() {
+    const navigate = useNavigate();
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <h1 className="text-xl font-semibold mb-4">Login Options</h1>
-            <a href="/login/mobile" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Login with Mobile</a>
-            <a href="/login/email" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Login with Email</a>
-            <a href="/login/gmail" className="w-full mb-2 p-3 text-center bg-black text-white rounded">Login with Gmail</a>
+        <div className="flex flex-col p-4 min-h-screen">
+            <h2 className="text-xl font-bold mb-4">Login / Register</h2>
+            <button
+                onClick={() => navigate("/login-mobile")}
+                className="bg-blue-600 text-white p-4 rounded mb-2 w-full"
+            >
+                Login with Mobile
+            </button>
         </div>
     );
 }

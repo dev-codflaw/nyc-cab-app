@@ -1,18 +1,32 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000"; // Update to your Node.js API URL
+const API_BASE_URL = "http://localhost:5000"; // Update this!
 
-export const sendOtp = async (mobile: string) => {
-    const res = await axios.post(`${API_BASE_URL}/auth/send-otp`, { mobile });
-    return res.data;
-};
+const api = axios.create({
+    baseURL: API_BASE_URL,
+});
 
-export const verifyOtp = async (mobile: string, otp: string) => {
-    const res = await axios.post(`${API_BASE_URL}/auth/verify-otp`, { mobile, otp });
-    return res.data;
-};
+export const sendOtp = (mobile: string) =>
+    api.post("/auth/send-otp", { mobile }).then((res) => res.data);
 
-export const completeProfile = async (profile: { firstName: string; lastName: string; email: string; mobile: string; }) => {
-    const res = await axios.post(`${API_BASE_URL}/auth/profile`, profile);
-    return res.data;
-};
+export const verifyOtp = (mobile: string, otp: string) =>
+    api.post("/auth/verify-otp", { mobile, otp }).then((res) => res.data);
+
+export const getProfile = (token: string) =>
+    api
+        .get("/auth/profile/me", { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => res.data);
+
+export const completeProfile = (profile: any, token: string) =>
+    api
+        .post("/auth/profile", profile, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => res.data);
+
+export const submitSurvey = (surveyData: any, token: string) =>
+    api
+        .post("/auth/survey", surveyData, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => res.data);

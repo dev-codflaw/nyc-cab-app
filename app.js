@@ -40,8 +40,7 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', require('./routes/auth'));
-app.use('/profile', require('./routes/profile'));
-app.use('/survey', require('./routes/survey'));
+
 
 app.get('/', (req, res) => {
   res.render('index.njk');

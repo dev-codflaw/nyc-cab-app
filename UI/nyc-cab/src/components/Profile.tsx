@@ -1,107 +1,116 @@
 import { useState, useEffect } from "react";
 import { completeProfile, getProfile } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-export default function ProfileComplete() {
+export default function Profile() {
     const [profile, setProfile] = useState({
         firstname: "",
         lastname: "",
         email: "",
-        mobile: "",
+        mobile: ""
     });
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const token = localStorage.getItem("token");
 
-    // 🚀 Load profile data on mount
     useEffect(() => {
         const loadProfile = async () => {
             try {
-                const data = await getProfile();
+                const data = await getProfile(token!);
                 if (data.success && data.user) {
                     setProfile({
                         firstname: data.user.firstname || "",
                         lastname: data.user.lastname || "",
                         email: data.user.email || "",
-                        mobile: data.user.mobile || "",
+                        mobile: data.user.mobile || ""
                     });
                 }
             } catch (err) {
-                console.error("Failed to load profile:", err);
+                console.error(err);
+                toast.error("Failed to load profile.");
             }
         };
         loadProfile();
-    }, []);
+    }, [token]);
 
     const handleSubmit = async () => {
-        const { firstname, lastname, email, mobile } = profile;
-        if (!firstname || !lastname || !email || !mobile ) {
-            return alert("Please fill in all fields.");
+        // Trim all values
+        const firstname = profile.firstname.trim();
+        const lastname = profile.lastname.trim();
+        const email = profile.email.trim();
+        const mobile = profile.mobile.trim();
+
+        // Check required fields
+        if (!firstname || !lastname || !email) {
+            toast.warn("All fields are required!");
+            return;
         }
 
         setLoading(true);
         try {
-            const res = await completeProfile(profile);
+            const res = await completeProfile(
+                { firstname, lastname, email, mobile },
+                token!
+            );
             if (res.success) {
-                alert("Profile updated successfully!");
+                toast.success("Profile updated successfully!");
                 navigate("/home");
             } else {
-                alert(res.message || "Failed to update profile.");
+                toast.error(res.message || "Failed to update profile.");
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Error updating profile.");
+            if (err.response && err.response.data && err.response.data.message) {
+                toast.error(err.response.data.message);
+            } else {
+                toast.error("Error updating profile.");
+            }
         } finally {
             setLoading(false);
         }
     };
 
     const handleChange = (field: string, value: string) => {
-        setProfile((prev) => ({ ...prev, [field]: value }));
+        setProfile((prev) => ({ ...prev, [field]: value.trimStart() })); // trimStart for better UX
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-            <h1 className="text-xl font-semibold mb-4">Complete or Update Profile</h1>
-
+        <div className="flex flex-col p-4 min-h-screen">
             <input
-                type="text"
                 placeholder="First Name"
-                className="border border-gray-300 p-3 rounded w-full mb-4"
                 value={profile.firstname}
                 onChange={(e) => handleChange("firstname", e.target.value)}
+                className="border p-3 rounded mb-2"
             />
-
             <input
-                type="text"
                 placeholder="Last Name"
-                className="border border-gray-300 p-3 rounded w-full mb-4"
                 value={profile.lastname}
                 onChange={(e) => handleChange("lastname", e.target.value)}
+                className="border p-3 rounded mb-2"
             />
-
             <input
-                type="email"
                 placeholder="Email"
-                className="border border-gray-300 p-3 rounded w-full mb-4"
                 value={profile.email}
                 onChange={(e) => handleChange("email", e.target.value)}
+                className="border p-3 rounded mb-2"
             />
-
             <input
-                type="tel"
                 placeholder="Mobile"
-                className="border border-gray-300 p-3 rounded w-full mb-4"
                 value={profile.mobile}
-                onChange={(e) => handleChange("mobile", e.target.value)}
+                disabled
+                className="border p-3 rounded mb-2 bg-gray-100 cursor-not-allowed"
             />
-
-
             <button
                 onClick={handleSubmit}
-                className="w-full p-3 text-center bg-black text-white rounded"
+                className="bg-black text-white p-3 rounded"
                 disabled={loading}
             >
                 {loading ? "Submitting..." : "Submit"}
+            </button>
+            <br/>
+            <button onClick={() => navigate("/home")} className="bg-blue-600 text-white p-3 rounded mb-2">
+                Home
             </button>
         </div>
     );

@@ -39,7 +39,7 @@ router.post('/forgot', authController.forgot);
 router.get('/reset/:token', authController.showReset);
 router.post('/reset/:token', authController.reset);
 
-router.get('/profile', (req, res) => {
+router.get('/test', (req, res) => {
     res.json({"message":"ok"});
 });
 

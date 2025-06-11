@@ -39,9 +39,8 @@ app.use((req, res, next) => {
 
 // List of allowed origins (front-end URLs)
 const allowedOrigins = [
-  'https://frontend1.com',
-  'https://frontend2.com',
-  'https://another-frontend.com'
+  'https://v0-simple-react-app-design.vercel.app',
+  'https://strikersnyc.com'
 ];
 // CORS options
 const corsOptions = {

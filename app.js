@@ -35,11 +35,33 @@ app.use((req, res, next) => {
   res.locals.user = req.session.user;
   next();
 });
-// app.use(cors({
-//   origin: "https://strikersnyc.com", // Allow your frontend domain
-//   credentials: true
-// }));
-app.use(cors());
+
+
+// List of allowed origins (front-end URLs)
+const allowedOrigins = [
+  'https://frontend1.com',
+  'https://frontend2.com',
+  'https://another-frontend.com'
+];
+// CORS options
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // If needed
+};
+
+app.use(cors(corsOptions));
+
+// Example route
+app.get('/api/health', (req, res) => {
+  res.json({ message: 'Hello from the API!' });
+});
+
 app.use(express.json());  
 
 // Routes

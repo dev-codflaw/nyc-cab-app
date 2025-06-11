@@ -61,18 +61,31 @@ exports.sendOtp = async (req, res) => {
   await user.save();
 
   // Send OTP via Twilio
-  try {
-    await twilioClient.messages.create({
-      body: `Your OTP is: ${otp}`,
-      from: process.env.TWILIO_PHONE,
-      to: mobile
-    });
+  // try {
+  //   await twilioClient.messages.create({
+  //     body: `Your OTP is: ${otp}`,
+  //     from: process.env.TWILIO_PHONE,
+  //     to: mobile
+  //   });
 
-    res.json({ success: true, message: 'OTP sent' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Failed to send OTP' });
-  }
+  //   res.json({ success: true, message: 'OTP sent' });
+  // } catch (err) {
+  //   console.error(err);
+  //   res.status(500).json({ success: false, message: 'Failed to send OTP' });
+  // }
+  try {
+  await twilioClient.messages.create({
+    body: `Your OTP is: ${otp}`,
+    from: 'whatsapp:+14155238886', // Twilio WhatsApp sandbox or your verified number
+    to: `whatsapp:${mobile}` // Format: whatsapp:+911234567890
+  });
+
+  res.json({ success: true, message: 'OTP sent via WhatsApp' });
+} catch (err) {
+  console.error(err);
+  res.status(500).json({ success: false, message: 'Failed to send WhatsApp OTP' });
+}
+
 };
 
 
